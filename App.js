@@ -64,7 +64,15 @@ export default class App extends Component<Props> {
       magnetoFps: undefined,
       deviceInfo: {
         brand: DeviceInfo.getBrand(),
-        deviceId: DeviceInfo.getDeviceId()
+        deviceId: DeviceInfo.getDeviceId(),
+        deviceCountry: DeviceInfo.getDeviceCountry(),
+        deviceName: DeviceInfo.getDeviceName(),
+        product: DeviceInfo.getProduct(),
+        model: DeviceInfo.getModel(),
+        display: DeviceInfo.getDisplay(),
+        systemName: DeviceInfo.getSystemName(),
+        systemVersion: DeviceInfo.getSystemVersion(),
+        uniqueId: DeviceInfo.getUniqueID(),
       }
     };
     setUpdateIntervalForType(
@@ -208,6 +216,10 @@ export default class App extends Component<Props> {
       Math.max(this.state.accelX.length - NUM_VISIBLE_SAMPLES, 0),
       this.state.accelX.length
     );
+    const accelY_last = this.state.accelY.slice(
+      Math.max(this.state.accelY.length - NUM_VISIBLE_SAMPLES, 0),
+      this.state.accelY.length
+    );
     const gyroX_last = this.state.gyroX.slice(
       Math.max(this.state.gyroX.length - NUM_VISIBLE_SAMPLES, 0),
       this.state.gyroX.length
@@ -216,45 +228,60 @@ export default class App extends Component<Props> {
       Math.max(this.state.magnetoX.length - NUM_VISIBLE_SAMPLES, 0),
       this.state.magnetoX.length
     );
-
+    const { deviceInfo } = this.state;
     return (
       <View style={styles.container}>
-        <Text>Accelerometer</Text>
+        <Text style={{fontWeight: "bold", marginTop: 10}}>Device</Text>
+        <Text>Device: {deviceInfo.brand}/{deviceInfo.model}/{deviceInfo.deviceCountry}</Text>
+        <Text>System: {deviceInfo.systemName}/{deviceInfo.systemVersion}</Text>
+        <Text style={{marginBottom: 10}}>Unique ID: {deviceInfo.uniqueId}</Text>
+
+        <Text style={{fontWeight: "bold"}}>Accelerometer</Text>
         <Text>{this.state.accelFps} of {this.state.targetSamplingRate} Hz</Text>
         <BarChart
-          style={{ height: 150, width: "100%" }}
+          style={{ height: 100, width: "100%" }}
           data={accelX_last}
           svg={{ fill }}
-          contentInset={{ top: 30, bottom: 30 }}
-          spacingInner={0}
+          contentInset={{ top: 10, bottom: 10 }}
+          spacingInner={0} spacingOuter={0}
           yMin={-15}
           yMax={+15}
         >
-          <Grid />
+          <BarChart
+          style={{ height: 100, width: "100%" }}
+          data={accelY_last}
+          svg={{ fill }}
+          contentInset={{ top: 10, bottom: 10 }}
+          spacingInner={0} spacingOuter={0}
+          yMin={-15}
+          yMax={+15}
+        ><Grid />
+        </BarChart>
+          
         </BarChart>
 
-        <Text>Gyroscope</Text>
+        <Text style={{fontWeight: "bold"}}>Gyroscope</Text>
         <Text>{this.state.gyroFps} of {this.state.targetSamplingRate} Hz</Text>
         <BarChart
-          style={{ height: 150, width: "100%" }}
+          style={{ height: 100, width: "100%" }}
           data={gyroX_last}
           svg={{ fill }}
-          contentInset={{ top: 30, bottom: 30 }}
-          spacingInner={0}
+          contentInset={{ top: 10, bottom: 10 }}
+          spacingInner={0} spacingOuter={0}
           yMin={-8}
           yMax={+8}
         >
           <Grid />
         </BarChart>
 
-        <Text>Magnetometer</Text>
+        <Text style={{fontWeight: "bold"}}>Magnetometer</Text>
         <Text>{this.state.magnetoFps} of {this.state.targetSamplingRate} Hz</Text>
         <BarChart
-          style={{ height: 150, width: "100%" }}
+          style={{ height: 100, width: "100%" }}
           data={magnetoX_last}
           svg={{ fill }}
-          contentInset={{ top: 30, bottom: 30 }}
-          spacingInner={0}
+          contentInset={{ top: 10, bottom: 10 }}
+          spacingInner={0} spacingOuter={0}
           yMin={-45}
           yMax={+45}
         >
@@ -269,7 +296,7 @@ export default class App extends Component<Props> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
     backgroundColor: "#F5FCFF"
   },
