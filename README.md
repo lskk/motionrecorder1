@@ -15,21 +15,21 @@ from http://www.fdsn.org/pdf/SEEDManual_V2.4.pdf : Orientation Code
 * Z N E Traditional (Vertical, North-South, East-West) (see 5 degree convention above)
 * A B C Triaxial (Along the edges of a cube turned up on a corner)
 
-1. Accelerometer (x, y, z and/or Z, N, E?) in m/s^2 + model. `SNA`, `SNB`, `SNC`, `SNZ`, `SNN`, `SNE`. Channel flag: G.
-2. Geomagnetic Field (calibrated) (x, y, z) in μT (Android) or T (SEED) + model. `SFA`. `SFB`, `SFC`, `SFZ`, `SFN`, `SFE`. Channel flag: G.
+1. [DONE_xyz] Accelerometer (x, y, z and/or Z, N, E?) in m/s^2 + model. `SNA`, `SNB`, `SNC`, `SNZ`, `SNN`, `SNE`. Channel flag: G.
+2. [DONE_xyz] Geomagnetic Field (calibrated) (x, y, z) in μT (Android) or T (SEED) + model. `SFA`. `SFB`, `SFC`, `SFZ`, `SFN`, `SFE`. Channel flag: G.
 3. Orientation (x, y, z) in degree or rad (?) + model.
-4. Gyroscope (x, y, z) in rad/s + model. `SJA`, `SJB`, `SJC`. Channel flag: G.
+4. [DONE_xyz] Gyroscope (x, y, z) in rad/s + model. `SJA`, `SJB`, `SJC`. Channel flag: G.
 5. Light in lux + model
 6. Promixity in cm + model
-7. Gravity (x, y, z) in m/s^2 + model
+7. [TODO] Gravity (x, y, z) in m/s^2 + model
 8. Linear acceleration (x, y, z or Z, N, E?) in m/s^2 + model
 9. Rotation vector (x, y, z) in (?) + model
 10. Step counter in steps + model
 11. Pressure. Barometer/pressure in Pa. `SDO`. flag: W/H.
-12. Location (latitude, longitude, accuracy; provider)
-13. Elevation (m)
-14. UTC timestamp at start
-15. Device model, manufacturer, System, Detail_device, Detail_product, Detail_APILevel, Detail_Build_ID
+12. [TODO] Location (latitude, longitude, accuracy; provider)
+13. [TODO] Elevation (m)
+14. [TODO] UTC timestamp at start and end of recording
+15. [DONE] Device: brand/model/deviceCountry, System: systemName/systemVersion
 
 ## JSON Schema
 
@@ -181,7 +181,14 @@ Sensor models:
 
 For Zenfone 5Z, target of 55 Hz consistently achieves ~40 Hz with 3 sensors, interpolation/resampling (both upsampling and downsampling) will be necessary.
 
-TODO: check with Samsung A50 and Vivo Y17. We may need to interpolate in-between samples.
+WARNING: react-native-svg-charts rendering is significantly reducing sensor performance. BarChart is fastest, followed by LineChart-curveLinear, then LineChart-curveStep.
+
+## TODOs
+
+* [ ] Resample
+* [ ] check with Samsung A50 and Vivo Y17. We may need to interpolate in-between samples.
+* [ ] Gravitation vector.
+* [ ] GPS.
 
 ## miniSEED channels
 

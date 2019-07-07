@@ -8,7 +8,7 @@
 
 import React, { Component } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
-import { BarChart, Grid } from "react-native-svg-charts";
+import { LineChart, BarChart, Grid, YAxis } from "react-native-svg-charts";
 import {
   accelerometer,
   gyroscope,
@@ -18,6 +18,8 @@ import {
 } from "react-native-sensors";
 import { map, filter } from "rxjs/operators";
 import DeviceInfo from 'react-native-device-info';
+import ndarray from "ndarray";
+import ndarrayResample from "ndarray-resample";
 
 const instructions = Platform.select({
   ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
@@ -30,15 +32,15 @@ type Props = {};
 export default class App extends Component<Props> {
   constructor(props) {
     super(props);
-    this.accelX = new Array(3 * 40).fill(0);
-    this.accelY = new Array(3 * 40).fill(0);
-    this.accelZ = new Array(3 * 40).fill(0);
-    this.gyroX = new Array(3 * 40).fill(0);
-    this.gyroY = new Array(3 * 40).fill(0);
-    this.gyroZ = new Array(3 * 40).fill(0);
-    this.magnetoX = new Array(3 * 40).fill(0);
-    this.magnetoY = new Array(3 * 40).fill(0);
-    this.magnetoZ = new Array(3 * 40).fill(0);
+    this.accelX = ndarray(new Float64Array(3 * 40));
+    this.accelY = ndarray(new Float64Array(3 * 40));
+    this.accelZ = ndarray(new Float64Array(3 * 40));
+    this.gyroX = ndarray(new Float64Array(3 * 40));
+    this.gyroY = ndarray(new Float64Array(3 * 40));
+    this.gyroZ = ndarray(new Float64Array(3 * 40));
+    this.magnetoX = ndarray(new Float64Array(3 * 40));
+    this.magnetoY = ndarray(new Float64Array(3 * 40));
+    this.magnetoZ = ndarray(new Float64Array(3 * 40));
     this.accelXStart = 0;
     this.accelYStart = 0;
     this.accelZStart = 0;
@@ -49,7 +51,7 @@ export default class App extends Component<Props> {
     this.magnetoYStart = 0;
     this.magnetoZStart = 0;
     this.state = {
-      targetSamplingRate: 160,
+      targetSamplingRate: 60,
       accelX: this.accelX,
       accelY: this.accelY,
       accelZ: this.accelZ,
@@ -96,17 +98,17 @@ export default class App extends Component<Props> {
     this._startTime = new Date().getTime();
     this.accelSub = accelerometer.subscribe(
       ({ x, y, z }) => {
-        this.accelX[this.accelXStart] = x;
-        this.accelY[this.accelYStart] = y;
-        this.accelZ[this.accelZStart] = z;
+        this.accelX.set(this.accelXStart, x);
         this.accelXStart++;
-        if (this.accelXStart >= this.accelX.length) {
+        if (this.accelXStart >= this.accelX.shape) {
           this.accelXStart = 0;
         }
+        this.accelY.set(this.accelYStart, y);
         this.accelYStart++;
         if (this.accelYStart >= this.accelY.length) {
           this.accelYStart = 0;
         }
+        this.accelZ.set(this.accelZStart, z);
         this.accelZStart++;
         if (this.accelZStart >= this.accelZ.length) {
           this.accelZStart = 0;
@@ -119,17 +121,17 @@ export default class App extends Component<Props> {
     );
     this.gyroSub = gyroscope.subscribe(
       ({ x, y, z }) => {
-        this.gyroX[this.gyroXStart] = x;
-        this.gyroY[this.gyroYStart] = y;
-        this.gyroZ[this.gyroZStart] = z;
+        this.gyroX.set(this.gyroXStart, x);
         this.gyroXStart++;
         if (this.gyroXStart >= this.gyroX.length) {
           this.gyroXStart = 0;
         }
+        this.gyroY.set(this.gyroYStart, y);
         this.gyroYStart++;
         if (this.gyroYStart >= this.gyroY.length) {
           this.gyroYStart = 0;
         }
+        this.gyroZ.set(this.gyroZStart, z);
         this.gyroZStart++;
         if (this.gyroZStart >= this.gyroZ.length) {
           this.gyroZStart = 0;
@@ -142,17 +144,17 @@ export default class App extends Component<Props> {
     );
     this.magnetoSub = magnetometer.subscribe(
       ({ x, y, z }) => {
-        this.magnetoX[this.magnetoXStart] = x;
-        this.magnetoY[this.magnetoYStart] = y;
-        this.magnetoZ[this.magnetoZStart] = z;
+        this.magnetoX.set(this.magnetoXStart, x);
         this.magnetoXStart++;
         if (this.magnetoXStart >= this.magnetoX.length) {
           this.magnetoXStart = 0;
         }
+        this.magnetoY.set(this.magnetoYStart, y);
         this.magnetoYStart++;
         if (this.magnetoYStart >= this.magnetoY.length) {
           this.magnetoYStart = 0;
         }
+        this.magnetoZ.set(this.magnetoZStart, z);
         this.magnetoZStart++;
         if (this.magnetoZStart >= this.magnetoZ.length) {
           this.magnetoZStart = 0;
@@ -176,7 +178,7 @@ export default class App extends Component<Props> {
           magnetoY: this.magnetoY,
           magnetoZ: this.magnetoZ,
         }),
-      125
+      1000
     );
     setInterval(() => {
       const fpsDur = new Date().getTime() - this._startTime;
@@ -207,27 +209,31 @@ export default class App extends Component<Props> {
   }
 
   render() {
-    const fill = "rgb(134, 65, 244)";
+    const stroke1 = {stroke: "rgb(134, 65, 244)"};
+    const stroke2 = {stroke: "rgb(65, 244, 134)"};
+    const stroke3 = {stroke: "rgb(244, 134, 65)"};
     const NUM_VISIBLE_SAMPLES = 3 * 40;
     // this.state.accelX[4] = -5;
     // this.state.accelX[5] = +5;
     // console.debug("accelX", this.state.accelX);
-    const accelX_last = this.state.accelX.slice(
-      Math.max(this.state.accelX.length - NUM_VISIBLE_SAMPLES, 0),
-      this.state.accelX.length
-    );
-    const accelY_last = this.state.accelY.slice(
-      Math.max(this.state.accelY.length - NUM_VISIBLE_SAMPLES, 0),
-      this.state.accelY.length
-    );
-    const gyroX_last = this.state.gyroX.slice(
-      Math.max(this.state.gyroX.length - NUM_VISIBLE_SAMPLES, 0),
-      this.state.gyroX.length
-    );
-    const magnetoX_last = this.state.magnetoX.slice(
-      Math.max(this.state.magnetoX.length - NUM_VISIBLE_SAMPLES, 0),
-      this.state.magnetoX.length
-    );
+    const accelX_last = Array.from(this.state.accelX.lo(
+      Math.max(this.state.accelX.shape - NUM_VISIBLE_SAMPLES, 0)).data);
+    const accelY_last = Array.from(this.state.accelY.lo(
+      Math.max(this.state.accelY.length - NUM_VISIBLE_SAMPLES, 0)).data);
+    const accelZ_last = Array.from(this.state.accelZ.lo(
+      Math.max(this.state.accelZ.length - NUM_VISIBLE_SAMPLES, 0)).data);
+    const gyroX_last = Array.from(this.state.gyroX.lo(
+      Math.max(this.state.gyroX.length - NUM_VISIBLE_SAMPLES, 0)).data);
+    const gyroY_last = Array.from(this.state.gyroY.lo(
+      Math.max(this.state.gyroY.length - NUM_VISIBLE_SAMPLES, 0)).data);
+    const gyroZ_last = Array.from(this.state.gyroZ.lo(
+      Math.max(this.state.gyroZ.length - NUM_VISIBLE_SAMPLES, 0)).data);
+    const magnetoX_last = Array.from(this.state.magnetoX.lo(
+      Math.max(this.state.magnetoX.length - NUM_VISIBLE_SAMPLES, 0)).data);
+    const magnetoY_last = Array.from(this.state.magnetoY.lo(
+      Math.max(this.state.magnetoY.length - NUM_VISIBLE_SAMPLES, 0)).data);
+    const magnetoZ_last = Array.from(this.state.magnetoZ.lo(
+      Math.max(this.state.magnetoZ.length - NUM_VISIBLE_SAMPLES, 0)).data);
     const { deviceInfo } = this.state;
     return (
       <View style={styles.container}>
@@ -238,55 +244,105 @@ export default class App extends Component<Props> {
 
         <Text style={{fontWeight: "bold"}}>Accelerometer</Text>
         <Text>{this.state.accelFps} of {this.state.targetSamplingRate} Hz</Text>
-        <BarChart
-          style={{ height: 100, width: "100%" }}
-          data={accelX_last}
-          svg={{ fill }}
-          contentInset={{ top: 10, bottom: 10 }}
-          spacingInner={0} spacingOuter={0}
-          yMin={-15}
-          yMax={+15}
-        >
-          <BarChart
-          style={{ height: 100, width: "100%" }}
-          data={accelY_last}
-          svg={{ fill }}
-          contentInset={{ top: 10, bottom: 10 }}
-          spacingInner={0} spacingOuter={0}
-          yMin={-15}
-          yMax={+15}
-        ><Grid />
-        </BarChart>
-          
-        </BarChart>
+        <View style={{height: 100, width: "100%"}}>
+          <LineChart
+            style={{flex: 1}}
+            data={accelX_last}
+            svg={stroke1}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-20}
+            yMax={+20}
+          >
+            <Grid />
+          </LineChart>
+          <LineChart
+            style={StyleSheet.absoluteFill}
+            data={accelY_last}
+            svg={stroke2}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-20}
+            yMax={+20}
+          />
+          <LineChart
+            style={StyleSheet.absoluteFill}
+            data={accelZ_last}
+            svg={stroke3}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-20}
+            yMax={+20}
+          />
+        </View>
 
         <Text style={{fontWeight: "bold"}}>Gyroscope</Text>
         <Text>{this.state.gyroFps} of {this.state.targetSamplingRate} Hz</Text>
-        <BarChart
-          style={{ height: 100, width: "100%" }}
-          data={gyroX_last}
-          svg={{ fill }}
-          contentInset={{ top: 10, bottom: 10 }}
-          spacingInner={0} spacingOuter={0}
-          yMin={-8}
-          yMax={+8}
-        >
-          <Grid />
-        </BarChart>
+        <View style={{height: 100, width: "100%"}}>
+          <LineChart
+            style={{flex: 1}}
+            data={gyroX_last}
+            svg={stroke1}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-8}
+            yMax={+8}
+          >
+            <Grid />
+          </LineChart>
+          <LineChart
+            style={StyleSheet.absoluteFill}
+            data={gyroY_last}
+            svg={stroke2}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-8}
+            yMax={+8}
+          />
+          <LineChart
+            style={StyleSheet.absoluteFill}
+            data={gyroZ_last}
+            svg={stroke3}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-8}
+            yMax={+8}
+          />
+        </View>
 
         <Text style={{fontWeight: "bold"}}>Magnetometer</Text>
         <Text>{this.state.magnetoFps} of {this.state.targetSamplingRate} Hz</Text>
-        <BarChart
-          style={{ height: 100, width: "100%" }}
-          data={magnetoX_last}
-          svg={{ fill }}
-          contentInset={{ top: 10, bottom: 10 }}
-          spacingInner={0} spacingOuter={0}
-          yMin={-45}
-          yMax={+45}
-        >
-          <Grid />
-        </BarChart>
+        <View style={{height: 100, width: "100%"}}>
+          <LineChart
+            style={{flex: 1}}
+            data={magnetoX_last}
+            svg={stroke1}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-45}
+            yMax={+45}
+          >
+            <Grid />
+          </LineChart>
+          <LineChart
+            style={StyleSheet.absoluteFill}
+            data={magnetoY_last}
+            svg={stroke2}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-45}
+            yMax={+45}
+          />
+          <LineChart
+            style={StyleSheet.absoluteFill}
+            data={magnetoZ_last}
+            svg={stroke3}
+            contentInset={{ top: 10, bottom: 10 }}
+            spacingInner={0} spacingOuter={0}
+            yMin={-45}
+            yMax={+45}
+          />
+        </View>
 
       </View>
     );
