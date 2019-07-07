@@ -2,7 +2,11 @@
 
 Motion Recorder for accelerometer, gyroscope, and magnetometer.
 
-Initially we want to save to miniSEED format (to make it easier to analyze using SRC Waves or SeisGram2K), however as there is currently no miniSEED library for JavaScript, we decided to save in custom JSON format instead, which can be both saved to files and inserted into MongoDB directly. Future plan: Server-side converter using Python/ObsPy to export the JSON waveform data to miniSEED format.
+Used for waveform/motion analysis, generate training data set for pattern recognition and machine learning, and seismic research, especially in LSKK and PPTIK Institut Teknologi Bandung (ITB). Initially we want to save to miniSEED format (to make it easier to analyze using SRC Waves or SeisGram2K), however as there is currently no miniSEED library for JavaScript, we decided to save in custom JSON format instead, which can be both saved to files and inserted into MongoDB directly.
+
+Future plan: Server-side converter using Python/ObsPy to export the JSON waveform data to miniSEED format.
+
+Full source code is available at https://github.com/lskk/motionrecorder
 
 ## Recorded data
 
@@ -166,13 +170,15 @@ horizontal
 
 Initially the target sampling rate is 40 Hz.
 
-However, using `react-native-sensors` the actual rate is (with stable use):
+However, using `react-native-sensors` the actual rate is about 50% of the target sampling rate (with stable use):
 
-* Zenfone 5Z accelerometer-only: ~ 20 Hz
+* Zenfone 5Z accelerometer+gyroscope+magnetometer: ~20 Hz with interval 25ms, ~40 Hz with interval 13ms. ~80 Hz with target 160 Hz except magnetometer stuck at ~75 Hz.
 
 Sensor models:
 
 * Zenfone 5Z: ICM20626 accelerometer, ICM20626 gyroscope, ak0991x magnetometer
+
+Target of 55 Hz consistently achieves ~40 Hz with 3 sensors, interpolation/resampling (both upsampling and downsampling) is necessary.
 
 TODO: check with Samsung A50 and Vivo Y17. We may need to interpolate in-between samples.
 
@@ -199,6 +205,12 @@ Network Station(4-chars) Location(2-digit, optional)
 e.g. "XX:X001::SNZ"
 
 To get actual units, divide the counts by gain.
+
+## Upload Key
+
+From `Google Drive/PSN_Tsunami/sysadmin`, copy the `quakezone.keystore` (upload key) file into the `android/app` directory in your project folder.
+
+The App Signing Key is managed by Google Play Console.
 
 ## References
 
