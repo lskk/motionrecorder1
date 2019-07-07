@@ -177,8 +177,9 @@ However, using `react-native-sensors` the actual rate is about 50% of the target
 Sensor models:
 
 * Zenfone 5Z: ICM20626 accelerometer, ICM20626 gyroscope, ak0991x magnetometer
+* Samsung A50: accelerometer 53-66 Hz, gyroscope 54-65 Hz, magnetometer 50-61 Hz
 
-Target of 55 Hz consistently achieves ~40 Hz with 3 sensors, interpolation/resampling (both upsampling and downsampling) is necessary.
+For Zenfone 5Z, target of 55 Hz consistently achieves ~40 Hz with 3 sensors, interpolation/resampling (both upsampling and downsampling) is necessary.
 
 TODO: check with Samsung A50 and Vivo Y17. We may need to interpolate in-between samples.
 

@@ -9,7 +9,6 @@
 import React, { Component } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import { BarChart, Grid } from "react-native-svg-charts";
-
 import {
   accelerometer,
   gyroscope,
@@ -18,6 +17,7 @@ import {
   SensorTypes
 } from "react-native-sensors";
 import { map, filter } from "rxjs/operators";
+import DeviceInfo from 'react-native-device-info';
 
 const instructions = Platform.select({
   ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
@@ -62,6 +62,10 @@ export default class App extends Component<Props> {
       accelFps: undefined,
       gyroFps: undefined,
       magnetoFps: undefined,
+      deviceInfo: {
+        brand: DeviceInfo.getBrand(),
+        deviceId: DeviceInfo.getDeviceId()
+      }
     };
     setUpdateIntervalForType(
       SensorTypes.accelerometer,
