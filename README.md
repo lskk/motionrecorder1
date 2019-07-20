@@ -15,16 +15,16 @@ from http://www.fdsn.org/pdf/SEEDManual_V2.4.pdf : Orientation Code
 * Z N E Traditional (Vertical, North-South, East-West) (see 5 degree convention above)
 * A B C Triaxial (Along the edges of a cube turned up on a corner)
 
-1. [DONE_xyz] Accelerometer (x, y, z and/or Z, N, E?) in m/s^2 + model. `SNA`, `SNB`, `SNC`, `SNZ`, `SNN`, `SNE`. Channel flag: G.
-2. [DONE_xyz] Geomagnetic Field (calibrated) (x, y, z) in μT (Android) or T (SEED) + model. `SFA`. `SFB`, `SFC`, `SFZ`, `SFN`, `SFE`. Channel flag: G.
-3. Orientation (x, y, z) in degree or rad (?) + model.
-4. [DONE_xyz] Gyroscope (x, y, z) in rad/s + model. `SJA`, `SJB`, `SJC`. Channel flag: G.
-5. Light in lux + model
-6. Promixity in cm + model
-7. [TODO] Gravity (x, y, z) in m/s^2 + model
-8. Linear acceleration (x, y, z or Z, N, E?) in m/s^2 + model
-9. Rotation vector (x, y, z) in (?) + model
-10. Step counter in steps + model
+1. [DONE_xyz] Accelerometer (x, y, z and/or Z, N, E?) in m/s^2 + samplingRate. `SNA`, `SNB`, `SNC`, `SNZ`, `SNN`, `SNE`. Channel flag: G.
+2. [DONE_xyz] Geomagnetic Field (calibrated) (x, y, z) in μT (Android) or T (SEED) + samplingRate. `SFA`. `SFB`, `SFC`, `SFZ`, `SFN`, `SFE`. Channel flag: G.
+3. Orientation (x, y, z) in degree or rad (?) + samplingRate.
+4. [DONE_xyz] Gyroscope (x, y, z) in rad/s + samplingRate. `SJA`, `SJB`, `SJC`. Channel flag: G.
+5. Light in lux
+6. Promixity in cm
+7. [TODO] Gravity (x, y, z) in m/s^2
+8. Linear acceleration (x, y, z or Z, N, E?) in m/s^2 + samplingRate
+9. Rotation vector (x, y, z) (unitless) + scalar + samplingRate
+10. Step counter in steps + samplingRate
 11. Pressure. Barometer/pressure in Pa. `SDO`. flag: W/H.
 12. [TODO] Location (latitude, longitude, accuracy; provider)
 13. [TODO] Elevation (m)
@@ -84,10 +84,8 @@ To aid classification training, we also add annotations:
                                 "longitude": 2.0,
                                 "elevation": 345.0,
                                 depth: 10.0, // The local depth or overburden of the instrument's location. For downhole instruments, the depth of the instrument under the surface ground level. For underground vaults, the distance from the instrument to the local ground level above.
-                                // azimuth: 0.0, // Azimuth of the sensor in degrees from north,
-clockwise.
-                                // dip: -90.0, // Dip of the instrument in degrees, down from
-horizontal
+                                // azimuth: 0.0, // Azimuth of the sensor in degrees from north, clockwise.
+                                // dip: -90.0, // Dip of the instrument in degrees, down from horizontal
                                 // The type of data this channel collects. Corresponds to channel flags in SEED blockette 52. The SEED volume producer could use the first letter of an Output value as the SEED channel flag.
                                 "types": [
                                     "TRIGGERED",
